@@ -7,11 +7,14 @@ app = Flask(__name__)
 
 # Variables de entorno
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "maryinnova")
-ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "EAAG...")  # Reemplaza con tu token real
-COHERE_API_KEY = os.getenv("COHERE_API_KEY", "your-cohere-key")  # Reemplaza con tu key real
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "EAAG...")
+COHERE_API_KEY = os.getenv("COHERE_API_KEY", "your-cohere-key")
 
-# Cliente de Cohere
+# Cliente Cohere
 co = cohere.Client(COHERE_API_KEY)
+
+# Estado temporal de usuarios
+user_state = {}
 
 @app.route("/", methods=["GET"])
 def home():
@@ -25,7 +28,7 @@ def webhook():
         if token_sent == VERIFY_TOKEN:
             return challenge, 200
         else:
-            return "Verification token mismatch", 403
+            return "Token inválido", 403
 
     if request.method == "POST":
         data = request.get_json()
@@ -36,33 +39,85 @@ def webhook():
                     messages = value.get("messages")
                     if messages:
                         for message in messages:
-                            phone_number_id = value["metadata"]["phone_number_id"]
+                            phone_id = value["metadata"]["phone_number_id"]
                             from_number = message["from"]
                             text = message["text"]["body"]
-                            response = handle_message(text)
-                            send_message(phone_number_id, from_number, response)
+                            response = manejar_flujo_usuario(from_number, text)
+                            enviar_mensaje(phone_id, from_number, response)
         return "OK", 200
 
-def handle_message(text):
-    # Flujo simple
-    if "hola" in text.lower():
-        return "Hola 👋, bienvenido a *InnovastyleWeb*. ¿Deseas ver nuestros servicios o hablar con la IA?"
-    elif "servicios" in text.lower():
-        return "Ofrecemos:\n1. Diseño Web 💻\n2. Tiendas virtuales 🛒\n3. Bots con IA 🤖\n\n¿Cuál te interesa?"
-    elif "ia" in text.lower():
-        return "Escribe lo que desees consultar y nuestra IA te ayudará 🤖"
-    else:
-        return consulta_ia(text)
+def manejar_flujo_usuario(user_id, text):
+    text = text.strip().lower()
 
-def consulta_ia(text):
+    # Iniciar flujo si dice "hola"
+    if text == "hola":
+        user_state[user_id] = {"step": "nombre"}
+        return "Hola 👋, bienvenido a *InnovastyleWeb*. ¿Cuál es tu nombre?"
+
+    if user_id in user_state:
+        state = user_state[user_id]
+
+        if state["step"] == "nombre":
+            state["nombre"] = text
+            state["step"] = "servicio"
+            return f"Gracias {text.title()} 💬. ¿Qué servicio necesitas? (Ej: Diseño web, tienda virtual, bot con IA)"
+
+        elif state["step"] == "servicio":
+            state["servicio"] = text
+            state["step"] = "presupuesto"
+            return "¿Cuál es tu presupuesto estimado?"
+
+        elif state["step"] == "presupuesto":
+            state["presupuesto"] = text
+            state["step"] = "plazo"
+            return "¿En cuántos días necesitas el servicio?"
+
+        elif state["step"] == "plazo":
+            state["plazo"] = text
+            state["step"] = "email"
+            return "Por favor, proporciona tu correo electrónico 📧"
+
+        elif state["step"] == "email":
+            state["email"] = text
+            resumen = (
+                f"📝 *Resumen del pedido:*\n"
+                f"Nombre: {state['nombre'].title()}\n"
+                f"Servicio: {state['servicio']}\n"
+                f"Presupuesto: {state['presupuesto']}\n"
+                f"Plazo: {state['plazo']} días\n"
+                f"Email: {state['email']}\n\n"
+                "✅ ¡Gracias por confiar en InnovastyleWeb! Te contactaremos pronto."
+            )
+            del user_state[user_id]  # Limpiar estado
+            return resumen
+
+    # Opción "ver servicios"
+    if "servicios" in text:
+        return (
+            "👗 Nuestros servicios:\n"
+            "1. Diseño Web 💻\n"
+            "2. Tiendas virtuales 🛒\n"
+            "3. Bots con IA 🤖\n"
+            "4. Branding y logos 🎨\n\n"
+            "Escribe *hola* para iniciar un pedido o *IA* para hacer una consulta libre."
+        )
+
+    # Opción usar IA
+    if "ia" in text:
+        return "🧠 Escribe tu consulta y nuestra IA te responderá."
+
+    # Si no está en flujo ni es comando, usar IA
+    return consulta_ia(text)
+
+def consulta_ia(texto):
     try:
-        response = co.chat(message=text)
-        return response.text
+        respuesta = co.chat(message=texto)
+        return respuesta.text
     except Exception as e:
-        return "Lo siento, hubo un error con la IA."
+        return "⚠️ Ocurrió un error al consultar la IA. Intenta más tarde."
 
-def send_message(phone_number_id, to, text):
-    url = f"https://graph.facebook.com/v18.0/{phone_number_id}/messages"
+def enviar_mensaje(phone_id, to, texto):
+    url = f"https://graph.facebook.com/v18.0/{phone_id}/messages"
     headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
         "Content-Type": "application/json"
@@ -70,9 +125,10 @@ def send_message(phone_number_id, to, text):
     data = {
         "messaging_product": "whatsapp",
         "to": to,
-        "text": {"body": text}
+        "text": {"body": texto}
     }
     requests.post(url, headers=headers, json=data)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
+
