@@ -7,7 +7,7 @@ services:
     startCommand: gunicorn main:app
     envVars:
       - key: VERIFY_TOKEN
-        value: innovastyle123
+        value: maryinnova
       - key: ACCESS_TOKEN
         value: EAARZBLR6Ufh8BPIWJNa2mWDR5VQmDXGrZAZBRex7SbYxLZAZAOUs7DhCviyjiy2OoxgWU6WfODkLRLu8OJuq3McLGsc8sPxMSTu7cxOpZB84PoIGotc2eVWC9ZAPOPcr6vuhdTNEbYR0gI1Wl5EZBMZCMkZCERdnaZAz71ZBqbBFZBnT2DpG8q30xAf3RMCZCZC6mOcZAOVSHrdnqKZCkY9yk5T62PmwZBCaZCkYSC8ZA9DlvqljYlPKjoqvMLEZD
       - key: COHERE_API_KEY
