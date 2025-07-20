@@ -5,10 +5,12 @@ import cohere
 
 app = Flask(__name__)
 
-VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "innovastyle123")
-ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "EAAG...")
-COHERE_API_KEY = os.getenv("COHERE_API_KEY", "your-cohere-key")
+# Variables de entorno
+VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "maryinnova")
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "EAAG...")  # Reemplaza con tu token real
+COHERE_API_KEY = os.getenv("COHERE_API_KEY", "your-cohere-key")  # Reemplaza con tu key real
 
+# Cliente de Cohere
 co = cohere.Client(COHERE_API_KEY)
 
 @app.route("/", methods=["GET"])
@@ -19,7 +21,11 @@ def home():
 def webhook():
     if request.method == "GET":
         token_sent = request.args.get("hub.verify_token")
-        return request.args.get("hub.challenge") if token_sent == VERIFY_TOKEN else "Verification token mismatch", 403
+        challenge = request.args.get("hub.challenge")
+        if token_sent == VERIFY_TOKEN:
+            return challenge, 200
+        else:
+            return "Verification token mismatch", 403
 
     if request.method == "POST":
         data = request.get_json()
@@ -42,12 +48,7 @@ def handle_message(text):
     if "hola" in text.lower():
         return "Hola 👋, bienvenido a *InnovastyleWeb*. ¿Deseas ver nuestros servicios o hablar con la IA?"
     elif "servicios" in text.lower():
-        return "Ofrecemos:
-1. Diseño Web 💻
-2. Tiendas virtuales 🛒
-3. Bots con IA 🤖
-
-¿Cuál te interesa?"
+        return "Ofrecemos:\n1. Diseño Web 💻\n2. Tiendas virtuales 🛒\n3. Bots con IA 🤖\n\n¿Cuál te interesa?"
     elif "ia" in text.lower():
         return "Escribe lo que desees consultar y nuestra IA te ayudará 🤖"
     else:
