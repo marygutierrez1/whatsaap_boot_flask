@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: whatsapp-boot-flask
+    env: python
+    plan: free
+    buildCommand: ""
+    startCommand: gunicorn main:app
+    envVars:
+      - key: VERIFY_TOKEN
+        value: innovastyle123
+      - key: ACCESS_TOKEN
+        value: EAAG...
+      - key: COHERE_API_KEY
+        value: your-cohere-key
+    autoDeploy: true
