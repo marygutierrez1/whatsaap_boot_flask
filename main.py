@@ -17,7 +17,7 @@ def webhook():
         print("Received message:", message)
     
     # Respondemos con un mensaje de éxito
-    return jsonify({"status": "success"})
+    return jsonify({"status": "success"}),200
 
 
 # Este endpoint puede servir para hacer la verificación de tu webhook en WhatsApp (si es necesario)
