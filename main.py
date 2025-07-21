@@ -1,14 +1,23 @@
 from flask import Flask, request, jsonify
+from dotenv import load_dotenv
 import requests
 import os
 import cohere
 
+# Carga el archivo .env
+load_dotenv()
 app = Flask(__name__)
 
 # Variables de entorno
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "maryinnova")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "EAARZBLR6Ufh8BPKaVMyRsrvEUFrmmXJrDHZCHc4qujNLORZCqWD2ITMyBJwqcDZAzEyX5pL73r7ZBgRlGf1tf9c7CIcHUCBPmptKaM8GajYzRJUerSBh00nbGsk0NMap2guQj6HSu8lYQEnjdMirC7XoD5JZCZCKpfU7Uns6NQ7sbYd5SiBVUVXffZBm9S0PdZCEjZC58beC9e9l0b1tACU8WVl7D11Nbbj831IZC893879LZBAKoQZDZD")
 COHERE_API_KEY = os.getenv("COHERE_API_KEY", "1uipgy5hyF7DgqndvZqKSv9FcWipVc66lNnLmS0E")
+
+# Imprime para verificar (opcional)
+print("VERIFY_TOKEN:", VERIFY_TOKEN)
+print("ACCESS_TOKEN:", ACCESS_TOKEN)
+print("COHERE_API_KEY:", COHERE_API_KEY)
+
 
 # Cliente Cohere
 co = cohere.Client(COHERE_API_KEY)
