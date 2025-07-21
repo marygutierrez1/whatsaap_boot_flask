@@ -2,3 +2,5 @@ flask
 requests
 cohere
 gunicorn
+python-dotenv
+
