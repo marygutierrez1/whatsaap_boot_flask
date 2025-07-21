@@ -2,5 +2,6 @@ flask
 requests
 cohere
 gunicorn
-python-dotenv
+python-dotenv==1.0.0
+
 
