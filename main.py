@@ -5,54 +5,6 @@ import cohere
 
 app = Flask(__name__)
 
-# Ruta de tu webhook
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    data = request.json
-    print("Received data:", data)  # Imprime el contenido del mensaje
-    
-    # Aquí puedes agregar la lógica para procesar el mensaje y generar una respuesta.
-    # Por ejemplo, un mensaje de prueba:
-    if 'messages' in data['entry'][0]['changes'][0]['value']:
-        message = data['entry'][0]['changes'][0]['value']['messages'][0]['text']['body']
-        print("Received message:", message)
-    
-    # Respondemos con un mensaje de éxito
-    return jsonify({"status": "success"}),200
-
-
-# Este endpoint puede servir para hacer la verificación de tu webhook en WhatsApp (si es necesario)
-@app.route('/verify', methods=['GET'])
-def verify():
-    token = request.args.get('hub.verify_token')
-    challenge = request.args.get('hub.challenge')
-    if token == 'maryinnova':  # Cambia 'maryinnova' por tu token de verificación
-        return challenge
-    return 'Invalid token', 403
-
-
-# Función para enviar un mensaje de WhatsApp
-def send_message(to, message):
-    url = f"https://graph.facebook.com/v12.0/{os.getenv('PHONE_NUMBER_ID')}/messages"
-    headers = {
-        "Authorization": f"Bearer {os.getenv('ACCESS_TOKEN')}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "messaging_product": "whatsapp",
-        "to": to,
-        "text": {"body": message}
-    }
-    response = requests.post(url, headers=headers, json=data)
-    print("Response from WhatsApp:", response.json())
-    return response.json()
-
-
-if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5000)
-
-app = Flask(__name__)
-
 # Variables de entorno
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "maryinnova")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "EAAG...")
@@ -175,8 +127,12 @@ def enviar_mensaje(phone_id, to, texto):
         "to": to,
         "text": {"body": texto}
     }
-    requests.post(url, headers=headers, json=data)
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()  # Lanza un error si la respuesta no es 2xx
+        print("Mensaje enviado correctamente:", response.json())
+    except requests.exceptions.RequestException as e:
+        print(f"Error al enviar mensaje: {e}")
 
 if __name__ == "__main__":
-     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
-
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
