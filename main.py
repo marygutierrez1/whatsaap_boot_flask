@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import requests
 import os
+import cohere
 
 app = Flask(__name__)
 
