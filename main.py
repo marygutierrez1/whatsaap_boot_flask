@@ -25,6 +25,17 @@ co = cohere.Client(COHERE_API_KEY)
 # Estado temporal de usuarios
 user_state = {}
 
+@app.route("/webhook", methods=["GET"])
+def verify():
+    verify_token = request.args.get("hub.verify_token")
+    challenge = request.args.get("hub.challenge")
+    mode = request.args.get("hub.mode")
+    
+    if verify_token == "maryinnova" and mode == "subscribe":
+        return challenge, 200
+    else:
+        return "Token de verificación inválido", 403
+
 @app.route("/", methods=["GET"])
 def home():
     return "Servidor WhatsApp con flujo e IA activo"
