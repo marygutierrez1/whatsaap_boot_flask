@@ -108,10 +108,11 @@ def manejar_flujo_usuario(user_id, text):
             "Escribe *hola* para iniciar un pedido o *IA* para hacer una consulta libre."
         )
 
-    if "ia" in text:
-        return "🧠 Escribe tu consulta y nuestra IA te responderá."
+   # Opción usar IA: mostrar mensaje y responder
+if "ia" in text:
+    intro = "🧠 Escribe tu consulta y nuestra IA te responderá.\n\n"
+    return intro + consulta_ia(text)
 
-    return consulta_ia(text)
 
 def consulta_ia(texto):
     try:
