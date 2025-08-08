@@ -9,11 +9,11 @@ load_dotenv()
 app = Flask(__name__)
 
 # Variables de entorno
-VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
-ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
-COHERE_API_KEY = os.getenv("COHERE_API_KEY")
+VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "maryinnova")
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "EAAShZA9jOrmUBPJiudZCIgyL4qavL2OHu2i4l88ZALkc8SQZCWzCnsKBe8IOWAAjPE1iujiwAiL2eM5n63ik7gvfXI8ZBijooZBZAL3hJ0YNINU6RDMBuDQ2cHUrQZAWc7KzIHKfdbZBCGDZCrFn0Qu1t9JE2QEZAthW6cdXyCCPRbyrAT8ZBOPh7I9rwadurEZC2c9qDOOMRsEYVZAdwVLyw1sMOR99yZC5IZANGQov7As0p0YwkoT1EgZDZD")
+COHERE_API_KEY = os.getenv("COHERE_API_KEY", "1uipgy5hyF7DgqndvZqKSv9FcWipVc66lNnLmS0E")
 
-# Imprime para verificar (solo en desarrollo)
+# Imprime para verificar (opcional)
 print("VERIFY_TOKEN:", VERIFY_TOKEN)
 print("ACCESS_TOKEN:", ACCESS_TOKEN)
 print("COHERE_API_KEY:", COHERE_API_KEY)
@@ -57,6 +57,7 @@ def webhook():
 def manejar_flujo_usuario(user_id, text):
     text = text.strip().lower()
 
+    # Iniciar flujo si dice "hola"
     if text == "hola":
         user_state[user_id] = {"step": "nombre"}
         return "Hola 👋, bienvenido a *InnovastyleWeb*. ¿Cuál es tu nombre?"
@@ -95,9 +96,10 @@ def manejar_flujo_usuario(user_id, text):
                 f"Email: {state['email']}\n\n"
                 "✅ ¡Gracias por confiar en InnovastyleWeb! Te contactaremos pronto."
             )
-            del user_state[user_id]
+            del user_state[user_id]  # Limpiar estado
             return resumen
 
+    # Opción "ver servicios"
     if "servicios" in text:
         return (
             "👗 Nuestros servicios:\n"
@@ -108,11 +110,12 @@ def manejar_flujo_usuario(user_id, text):
             "Escribe *hola* para iniciar un pedido o *IA* para hacer una consulta libre."
         )
 
-   # Opción usar IA: mostrar mensaje y responder
-if "ia" in text:
-    intro = "🧠 Escribe tu consulta y nuestra IA te responderá.\n\n"
-    return intro + consulta_ia(text)
+    # Opción usar IA
+    if "ia" in text:
+        return "🧠 Escribe tu consulta y nuestra IA te responderá. Escribe tu consulta y nuestra IA te responderá."
 
+    # Si no está en flujo ni es comando, usar IA
+    return consulta_ia(text)
 
 def consulta_ia(texto):
     try:
